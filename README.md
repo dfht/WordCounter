@@ -1,5 +1,8 @@
-# WordCount
-WordCount example.
+# WordCounter
+
+A simple command line application to compute the occurrences of different words in a file and output the results to System.out. 
+Each line shows a word and the number of occurrences of that word in the file. 
+The results are printed out in descending order of frequency.
 
 Assuming you have Maven installed, then it can be built (from command line in the project folder) via:
 
@@ -14,7 +17,7 @@ This is an executable java file that can simply be run (from a folder containing
 `java -jar wordCounter.jar`
 
 Optionally, arguments can be passed in for the file and the encoding. If the encoding isn't specified then it is 'guessed' from the BOM (via icu4j).
-If the file isn't specified, then it will be asked for on the command line (and optionally you will also have a chance to explicitly specify a character set - e.g. in case the file has no BOM).
+If the file isn't specified, then it will be asked for on the command line.
 
 Full usage is:
 
