@@ -11,11 +11,17 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Random;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.dfht.Arguments;
@@ -292,6 +298,10 @@ public class Tests {
 	//Check that the word count comes back as expected.
 	//This tests the counting algorithm.
 	private static void testBasicExpectedResultsForCountAlgorithm(String[] words, int maxOccurence) throws IOException{
+		
+		//Better to not use Randoms so it is repeatable.
+		//Whilst i knew that, I also see the value of 'mixing it up' a bit in order to find edge cases 
+		//that having a static definite data-set won't find.
 		Random random = new Random();
 		Map<String, Long> frequencies = new HashMap<>(words.length);
 		//Make a collection of all the words (each one occurring a random number of times between 0 and 100). 
@@ -302,10 +312,14 @@ public class Tests {
 		for (String w : words) {
 			//A 'Random' integer between 0 and 100.
 			long howMany = random(random, 0, maxOccurence);
-			frequencies.put(w, howMany);
-			for (int i = 0; i < howMany; i++) {
-				allWords.add(w);
-			};
+			//Putting zeros in will clearly make it fail as my algorithm 
+			//won't find words that aren't there!!!!!!
+			if(howMany > 0) {
+				frequencies.put(w, howMany);
+				for (int i = 0; i < howMany; i++) {
+					allWords.add(w);
+				};
+			}
 		};
 		//Now jumble up the words and insert 'random' whitespace between them.
 		List<String> shuffled = shuffledCopy(allWords);
@@ -322,7 +336,27 @@ public class Tests {
 		
 		BufferedReader reader = new BufferedReader(new StringReader(b.toString()));
 		Map<String, Long> computedFrequencies = WordCounter.processedCounts(reader.lines());
-		assert frequencies.equals(computedFrequencies) : "Incorrect word count computed";
+		
+		boolean isOk = frequencies.equals(computedFrequencies);
+		if(!isOk) {
+			//What are the differences?
+			//Print them out for useful feedback.
+			Set<String> keys = new HashSet<>();
+			keys.addAll(frequencies.keySet());
+			keys.addAll(computedFrequencies.keySet());
+			String errorMessage = keys.stream().filter(key -> {
+				Long expected = frequencies.get(key);
+				Long occured = computedFrequencies.get(key);
+				return !Objects.equals(expected, occured);
+			}).map( key-> {
+				Long expected = frequencies.get(key);
+				Long occured = computedFrequencies.get(key);
+				String eString = expected == null ? "null" : expected.toString();
+				String oString = occured == null ? "null" : occured.toString();
+				return String.format("Expected %s, but got %s", eString, oString);
+			}).collect(Collectors.joining("\n"));
+			Assert.fail(errorMessage);
+		}
 	}
 	
 
